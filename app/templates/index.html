@@ -4,12 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DOCX to PDF Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        .upload-container {
+            max-width: 600px;
+            margin: auto;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+        }
+        input[type="submit"] {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        .password-field {
+            margin: 10px 0;
+        }
+    </style>
 </head>
 <body>
-    <h1>Upload DOCX to Convert to PDF</h1>
-    <form action="/" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" accept=".docx" required>
-        <button type="submit">Convert</button>
-    </form>
+    <h1>Convert DOCX to PDF</h1>
+    <div class="upload-container">
+        <form method="POST" enctype="multipart/form-data">
+            <input type="file" name="file" required><br>
+            <div class="password-field">
+                <label for="password">Password (optional):</label>
+                <input type="password" name="password" id="password">
+            </div>
+            <input type="submit" value="Upload and Convert">
+        </form>
+    </div>
 </body>
 </html>

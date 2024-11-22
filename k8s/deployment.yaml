@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: doc-to-pdf-container
-          image: shashwat543/doc-to-pdf-app:latest  # Ensure this points to the correct image
+          image: shashwat543/doc-to-pdf-app:v2  # Ensure this points to the correct image
           ports:
             - containerPort: 5000
           resources:

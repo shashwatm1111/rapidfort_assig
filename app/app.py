@@ -1,8 +1,10 @@
 import os
 from flask import Flask, request, render_template, send_from_directory, abort
 from werkzeug.utils import secure_filename
-from docx import Document
 from fpdf import FPDF
+from docx import Document  # Necessary for handling DOCX files
+import pikepdf
+
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -41,16 +43,26 @@ def home():
             # Convert DOCX to PDF
             pdf_filename = filename.rsplit(".", 1)[0] + ".pdf"
             pdf_filepath = os.path.join(app.config["UPLOAD_FOLDER"], pdf_filename)
+            protected_pdf_filename = filename.rsplit(".", 1)[0] + "_protected.pdf"
+            protected_pdf_filepath = os.path.join(app.config["UPLOAD_FOLDER"], protected_pdf_filename)
+
+            # Get password from the form (optional)
+            password = request.form.get("password")
 
             try:
+                # Convert DOCX to PDF
                 convert_docx_to_pdf(filepath, pdf_filepath)
-            except Exception as e:
-                return f"Error during conversion: {str(e)}", 500
 
-            return render_template(
-                "download.html",
-                pdf_filename=pdf_filename,
-            )
+                # Apply password protection if password is provided
+                if password:
+                    add_password_to_pdf(pdf_filepath, protected_pdf_filepath, password)
+                    return render_template("download.html", pdf_filename=protected_pdf_filename)
+                else:
+                    return render_template("download.html", pdf_filename=pdf_filename)
+
+            except Exception as e:
+                return f"Error during processing: {str(e)}", 500
+
         else:
             return "Invalid file type. Only .docx files are allowed.", 400
 
@@ -75,12 +87,25 @@ def convert_docx_to_pdf(input_path, output_path):
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
 
+    # Adding UTF-8 support by setting an encoding
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+
     for paragraph in doc.paragraphs:
-        pdf.add_page()
-        pdf.set_font("Arial", size=12)
-        pdf.multi_cell(0, 10, paragraph.text)
+        pdf.multi_cell(0, 10, paragraph.text.encode('latin-1', 'replace').decode('latin-1'))
 
     pdf.output(output_path)
+
+
+# Function to add password protection to the PDF
+def add_password_to_pdf(input_pdf_path, output_pdf_path, password):
+    try:
+        # Open the original PDF with pikepdf
+        with pikepdf.open(input_pdf_path) as pdf:
+            # Set the password protection
+            pdf.save(output_pdf_path, encryption=pikepdf.Encryption(owner=password, user=password, R=4))
+    except Exception as e:
+        raise Exception(f"Error during password protection: {str(e)}")
 
 
 # Main entry point
